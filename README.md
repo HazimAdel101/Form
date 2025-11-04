@@ -88,7 +88,60 @@ The form data sent to your endpoint will be in the following format:
 }
 ```
 
-## Production Deployment
+## Docker Deployment
+
+### Build and Run with Docker
+
+```bash
+# Build the Docker image
+docker build -t form-app .
+
+# Run the container
+docker run -p 3000:3000 \
+  -e API_ENDPOINT_URL="https://n8n.marevo.info/webhook/new-subscription" \
+  form-app
+```
+
+### Using Docker Compose
+
+```bash
+# Create a .env file (optional, for custom endpoint)
+echo "API_ENDPOINT_URL=https://n8n.marevo.info/webhook/new-subscription" > .env
+
+# Build and run with docker-compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+### Deploy to Cloud Platforms
+
+#### Vercel (Recommended for Next.js)
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Import your repository in Vercel
+3. Set environment variable `API_ENDPOINT_URL` if needed
+4. Deploy
+
+#### Docker Hub / Cloud Container Registry
+```bash
+# Build and tag
+docker build -t your-username/form-app:latest .
+
+# Push to registry
+docker push your-username/form-app:latest
+```
+
+#### AWS / Google Cloud / Azure
+1. Build the Docker image
+2. Push to your container registry (ECR, GCR, ACR)
+3. Deploy using your cloud's container service (ECS, Cloud Run, Container Instances)
+4. Set environment variables in your cloud console
+
+## Production Deployment (Non-Docker)
 
 1. Set `API_ENDPOINT_URL` or `NEXT_PUBLIC_API_ENDPOINT_URL` in your environment variables
 2. Build the application: `npm run build`

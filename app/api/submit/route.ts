@@ -23,27 +23,47 @@ export async function POST(request: NextRequest) {
     // Call external endpoint
     const endpointUrl = process.env.API_ENDPOINT_URL || 'https://n8n.marevo.info/webhook/new-subscription';
     
-    const response = await fetch(endpointUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
+    console.log('Submitting to webhook:', endpointUrl);
+    console.log('Form data:', JSON.stringify(formData, null, 2));
+    
+    let response: Response;
+    try {
+      response = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+    } catch (fetchError: any) {
+      console.error('Fetch error:', fetchError);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Network error: ${fetchError.message || 'Failed to connect to webhook endpoint'}` 
+        },
+        { status: 500 }
+      );
+    }
     
     if (!response.ok) {
-      let errorMessage = 'Failed to submit form to external endpoint';
+      let errorMessage = `Failed to submit form to external endpoint (Status: ${response.status})`;
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorMessage;
+        errorMessage = errorData.message || errorData.error || errorMessage;
       } catch {
         try {
           const text = await response.text();
           errorMessage = text || errorMessage;
         } catch {
-          // Use default error message
+          // Use default error message with status
         }
       }
+      console.error('Webhook error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorMessage
+      });
       return NextResponse.json(
         { success: false, message: errorMessage },
         { status: response.status }

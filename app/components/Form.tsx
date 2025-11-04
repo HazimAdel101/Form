@@ -60,7 +60,14 @@ export default function Form() {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      let result: any = {};
+      try {
+        const text = await response.text();
+        result = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        // If response is not JSON, use empty object
+        result = {};
+      }
 
       if (response.ok) {
         setSubmitStatus({
@@ -69,15 +76,44 @@ export default function Form() {
         });
         reset();
       } else {
+        // Safely extract error message - handle cases where message might be an object
+        let errorMessage = 'Failed to submit form. Please try again.';
+        
+        if (result.message) {
+          if (typeof result.message === 'string') {
+            errorMessage = result.message;
+          } else if (typeof result.message === 'object') {
+            // If message is an object, try to extract a string from it
+            errorMessage = result.message.message || JSON.stringify(result.message);
+          }
+        } else if (result.error) {
+          errorMessage = typeof result.error === 'string' ? result.error : 'An error occurred';
+        } else if (result.missing_fields) {
+          // Handle missing_fields case
+          const missing = Array.isArray(result.missing_fields) 
+            ? result.missing_fields.join(', ')
+            : String(result.missing_fields);
+          errorMessage = `Missing required fields: ${missing}`;
+        }
+        
         setSubmitStatus({
           type: 'error',
-          message: result.message || 'Failed to submit form. Please try again.',
+          message: errorMessage,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Handle any JSON parsing errors or network errors
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       setSubmitStatus({
         type: 'error',
-        message: 'An error occurred. Please try again.',
+        message: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
