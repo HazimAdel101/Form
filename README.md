@@ -19,18 +19,12 @@ A professional form application built with Next.js 15 and Zod validation.
 npm install
 ```
 
-### 2. Set Up Environment Variables
+### 2. Set Up Environment Variables (Optional)
 
-Create a `.env.local` file in the root directory:
-
-```env
-API_ENDPOINT_URL="https://your-api-endpoint.com/api/submit"
-```
-
-Or if you need to use it on the client side:
+The API endpoint is set to `https://n8n.marevo.info/webhook/new-subscription` by default. If you need to override it, create a `.env.local` file in the root directory:
 
 ```env
-NEXT_PUBLIC_API_ENDPOINT_URL="https://your-api-endpoint.com/api/submit"
+API_ENDPOINT_URL="https://your-custom-endpoint.com/api/submit"
 ```
 
 ### 3. Run the Development Server
@@ -77,7 +71,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the f
 
 ## API Integration
 
-The form validates data on both client and server side, then forwards the validated data to your external endpoint. The endpoint URL is configured via the `API_ENDPOINT_URL` or `NEXT_PUBLIC_API_ENDPOINT_URL` environment variable.
+The form validates data on both client and server side, then forwards the validated data to the external webhook endpoint at `https://n8n.marevo.info/webhook/new-subscription`. You can override this by setting the `API_ENDPOINT_URL` environment variable.
 
 The form data sent to your endpoint will be in the following format:
 

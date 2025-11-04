@@ -32,14 +32,40 @@ export async function POST(request: NextRequest) {
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorMessage = 'Failed to submit form to external endpoint';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        try {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        } catch {
+          // Use default error message
+        }
+      }
       return NextResponse.json(
-        { success: false, message: errorData.message || 'Failed to submit form to external endpoint' },
+        { success: false, message: errorMessage },
         { status: response.status }
       );
     }
     
-    const result = await response.json();
+    // Try to parse JSON response, but handle cases where webhook might return empty or plain text
+    const contentType = response.headers.get('content-type');
+    let result: any = { success: true };
+    
+    try {
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        if (text) {
+          result = { message: text };
+        }
+      }
+    } catch {
+      // If response body is empty or unparseable, use default success result
+    }
     
     return NextResponse.json(
       { success: true, data: result },
