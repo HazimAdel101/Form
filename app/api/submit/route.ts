@@ -9,13 +9,14 @@ export async function POST(request: NextRequest) {
     const validatedData = formSchema.parse(body);
     
     // Prepare data for external endpoint
+    // Map form fields to external API expected field names
     const formData = {
       name: validatedData.name,
-      phone: validatedData.phone,
+      phone_number: validatedData.phone,
       email: validatedData.email,
       notes: validatedData.notes || null,
-      price: validatedData.price,
-      service: validatedData.service,
+      service_price: validatedData.price,
+      service_name: validatedData.service,
       start_date: validatedData.start_date,
       end_date: validatedData.end_date,
     };
